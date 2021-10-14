@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using MinHook;
 
 namespace Drone.Modules
@@ -23,17 +24,19 @@ namespace Drone.Modules
         {
             public string Name { get; }
             public string Description { get; }
-            public bool Visible { get; set; }
+            public bool Visible { get; }
+            public bool Hookable { get; }
             public List<Argument> Arguments { get; }
             public Drone.Callback Callback { get; }
 
-            public Command(string name, string description, Drone.Callback callback, List<Argument> arguments = null, bool visible = true)
+            public Command(string name, string description, Drone.Callback callback, List<Argument> arguments = null, bool visible = true, bool hookable = false)
             {
                 Name = name;
                 Description = description;
                 Callback = callback;
                 Arguments = arguments ?? new List<Argument>();
                 Visible = visible;
+                Hookable = hookable;
             }
 
             public class Argument

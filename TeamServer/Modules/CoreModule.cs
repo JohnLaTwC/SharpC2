@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
-using AutoMapper;
-using SharpC2.API.V1.Responses;
+
 using TeamServer.Models;
 
 namespace TeamServer.Modules

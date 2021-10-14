@@ -22,7 +22,7 @@ namespace Drone
             {
                 new("command", false)
                 
-            })
+            }, hookable: true)
         };
 
         private string _imported = "";

