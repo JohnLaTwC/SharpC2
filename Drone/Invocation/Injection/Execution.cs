@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 
-namespace Drone.DynamicInvocation.Injection
+namespace Drone.Invocation.Injection
 {
     public abstract class ExecutionTechnique
     {

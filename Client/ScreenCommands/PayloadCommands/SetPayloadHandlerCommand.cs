@@ -23,6 +23,13 @@ namespace SharpC2.ScreenCommands.PayloadCommands
         private Task SetPayloadOption(string[] args)
         {
             var screen = (PayloadsScreen)_screen;
+            
+            if (args.Length < 3)
+            {
+                screen.Console.PrintError("Not enough arguments");
+                return Task.CompletedTask;
+            }
+            
             var option = args[1];
 
             if (option.Equals("handler", StringComparison.OrdinalIgnoreCase))

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Drone.DynamicInvocation.Data
+namespace Drone.Invocation.Data
 {
     public static class Native
     {

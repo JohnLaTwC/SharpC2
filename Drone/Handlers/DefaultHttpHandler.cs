@@ -64,7 +64,7 @@ namespace Drone.Handlers
         {
             if (response.Length == 0) return;
 
-            var envelope = response.Deserialize<C2Message>();
+            var envelope = response.Deserialize<MessageEnvelope>();
             if (envelope is null) return;
 
             InboundQueue.Enqueue(envelope);

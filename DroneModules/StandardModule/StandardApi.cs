@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
 
-using Drone.DynamicInvocation.DynamicInvoke;
-using Drone.DynamicInvocation.Injection;
-using Drone.DynamicInvocation.ManualMap;
+using Drone.Invocation.DynamicInvoke;
+using Drone.Invocation.Injection;
+using Drone.Invocation.ManualMap;
 using Drone.Models;
 using Drone.Modules;
 using Drone.SharpSploit.Enumeration;

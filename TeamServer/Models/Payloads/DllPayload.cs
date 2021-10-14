@@ -11,8 +11,9 @@ namespace TeamServer.Models
 {
     public class DllPayload : Payload
     {
-        public DllPayload(Handler handler, C2Profile c2Profile) : base(handler, c2Profile) { }
-        
+        public DllPayload(Handler handler, C2Profile c2Profile, string cryptoKey) : base(handler, c2Profile, cryptoKey)
+        { }
+
         public override async Task Generate()
         {
             var drone = await GetDroneModuleDef();

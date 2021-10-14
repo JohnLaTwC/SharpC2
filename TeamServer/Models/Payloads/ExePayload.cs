@@ -9,7 +9,8 @@ namespace TeamServer.Models
 {
     public class ExePayload : Payload
     {
-        public ExePayload(Handler handler, C2Profile c2Profile) : base(handler, c2Profile) { }
+        public ExePayload(Handler handler, C2Profile c2Profile, string cryptoKey) : base(handler, c2Profile, cryptoKey)
+        { }
         
         public override async Task Generate()
         {

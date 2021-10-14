@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Drone.DynamicInvocation.Injection
+namespace Drone.Invocation.Injection
 {
     public static class Injector
     {

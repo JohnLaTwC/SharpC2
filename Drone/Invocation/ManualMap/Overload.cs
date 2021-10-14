@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Drone.DynamicInvocation.ManualMap
+namespace Drone.Invocation.ManualMap
 {
     public static class Overload
     {

@@ -10,8 +10,8 @@ namespace Drone.Handlers
     {
         public abstract string Name { get; }
         
-        protected readonly ConcurrentQueue<C2Message> InboundQueue = new();
-        protected readonly ConcurrentQueue<C2Message> OutboundQueue = new();
+        protected readonly ConcurrentQueue<MessageEnvelope> InboundQueue = new();
+        protected readonly ConcurrentQueue<MessageEnvelope> OutboundQueue = new();
 
         protected DroneConfig Config;
         protected Metadata Metadata;
@@ -22,12 +22,12 @@ namespace Drone.Handlers
             Metadata = metadata;
         }
 
-        public void QueueOutbound(C2Message message)
+        public void QueueOutbound(MessageEnvelope message)
         {
             OutboundQueue.Enqueue(message);
         }
         
-        public bool GetInbound(out IEnumerable<C2Message> messages)
+        public bool GetInbound(out IEnumerable<MessageEnvelope> messages)
         {
             if (InboundQueue.IsEmpty)
             {
@@ -35,7 +35,7 @@ namespace Drone.Handlers
                 return false;
             }
 
-            List<C2Message> temp = new();
+            List<MessageEnvelope> temp = new();
 
             while (InboundQueue.TryDequeue(out var message))
                 temp.Add(message);
@@ -44,9 +44,9 @@ namespace Drone.Handlers
             return true;
         }
 
-        protected IEnumerable<C2Message> GetOutboundQueue()
+        protected IEnumerable<MessageEnvelope> GetOutboundQueue()
         {
-            List<C2Message> temp = new();
+            List<MessageEnvelope> temp = new();
 
             while (OutboundQueue.TryDequeue(out var message))
                 temp.Add(message);

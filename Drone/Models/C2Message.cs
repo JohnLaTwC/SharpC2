@@ -5,16 +5,16 @@ namespace Drone.Models
     [DataContract]
     public class C2Message
     {
-        [DataMember (Name = "direction")]
+        [DataMember (Name = "Direction")]
         public MessageDirection Direction { get; set; }
         
-        [DataMember (Name = "type")]
+        [DataMember (Name = "Type")]
         public MessageType Type { get; set; }
         
-        [DataMember (Name = "metadata")]
+        [DataMember (Name = "Metadata")]
         public Metadata Metadata { get; set; }
         
-        [DataMember (Name = "data")]
+        [DataMember (Name = "Data")]
         public string Data { get; set; }
 
         public C2Message(MessageDirection direction, MessageType type, Metadata metadata)

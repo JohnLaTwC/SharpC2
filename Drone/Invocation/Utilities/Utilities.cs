@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 
-namespace Drone.DynamicInvocation.Utilities
+namespace Drone.Invocation.Utilities
 {
     public static class Utilities
     {

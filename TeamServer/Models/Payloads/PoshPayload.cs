@@ -8,11 +8,12 @@ namespace TeamServer.Models
 {
     public class PoshPayload : Payload
     {
-        public PoshPayload(Handler handler, C2Profile c2Profile) : base(handler, c2Profile) { }
+        public PoshPayload(Handler handler, C2Profile c2Profile, string cryptoKey) : base(handler, c2Profile, cryptoKey)
+        { }
         
         public override async Task Generate()
         {
-            var exe = new ExePayload(Handler, C2Profile);
+            var exe = new ExePayload(Handler, C2Profile, CryptoKey);
             await exe.Generate();
 
             var scriptBytes = await Utilities.GetEmbeddedResource("drone.ps1");

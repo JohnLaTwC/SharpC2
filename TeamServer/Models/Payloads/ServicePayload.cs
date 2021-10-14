@@ -9,11 +9,12 @@ namespace TeamServer.Models
 {
     public class ServicePayload : Payload
     {
-        public ServicePayload(Handler handler, C2Profile c2Profile) : base(handler, c2Profile) { }
+        public ServicePayload(Handler handler, C2Profile c2Profile, string cryptoKey) : base(handler, c2Profile, cryptoKey)
+        { }
         
         public override async Task Generate()
         {
-            var shellcode = new RawPayload(Handler, C2Profile);
+            var shellcode = new RawPayload(Handler, C2Profile, CryptoKey);
             await shellcode.Generate();
 
             var svcBinary = await Utilities.GetEmbeddedResource("drone_svc.exe");

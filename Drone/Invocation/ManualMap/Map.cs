@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 
 
-namespace Drone.DynamicInvocation.ManualMap
+namespace Drone.Invocation.ManualMap
 {
     public static class Map
     {

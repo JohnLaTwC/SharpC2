@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Drone.DynamicInvocation.DynamicInvoke
+namespace Drone.Invocation.DynamicInvoke
 {
     public static class Generic
     {

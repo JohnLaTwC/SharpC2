@@ -11,20 +11,22 @@ namespace TeamServer.Services
     {
         private readonly IServerService _server;
         private readonly IDroneService _drones;
+        private readonly ICryptoService _crypto;
 
-        public TaskService(IServerService server, IDroneService drones)
+        public TaskService(IServerService server, IDroneService drones, ICryptoService crypto)
         {
             _server = server;
             _drones = drones;
+            _crypto = crypto;
         }
 
-        public async Task RecvC2Data(IEnumerable<C2Message> messages)
+        public async Task RecvC2Data(IEnumerable<MessageEnvelope> messages)
         {
             foreach (var message in messages)
                 await _server.HandleC2Message(message);
         }
 
-        public async Task<C2Message> GetDroneTasks(DroneMetadata metadata)
+        public async Task<MessageEnvelope> GetDroneTasks(DroneMetadata metadata)
         {
             var drone = _drones.GetDrone(metadata.Guid);
 
@@ -46,10 +48,16 @@ namespace TeamServer.Services
             var tasks = drone.GetPendingTasks().ToArray();
             if (!tasks.Any()) return null;
 
-            return new C2Message(C2Message.MessageDirection.Downstream, C2Message.MessageType.DroneTask)
+            var message = new C2Message(C2Message.MessageDirection.Downstream, C2Message.MessageType.DroneTask)
             {
-                Data = tasks.Serialize()
+                Data = tasks.Serialize(),
+                Metadata = new DroneMetadata { Guid = metadata.Guid }
             };
+
+            var envelope = _crypto.EncryptMessage(message);
+            envelope.Drone = metadata.Guid;
+
+            return envelope;
         }
     }
 }

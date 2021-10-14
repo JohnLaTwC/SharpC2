@@ -13,6 +13,6 @@ namespace TeamServer.Interfaces
         Module LoadModule(byte[] bytes);
         Module GetModule(string name);
         IEnumerable<Module> GetModules();
-        Task HandleC2Message(C2Message message);
+        Task HandleC2Message(MessageEnvelope envelope);
     }
 }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Drone.DynamicInvocation.Data;
+using Drone.Invocation.Data;
 
-namespace Drone.DynamicInvocation.Injection
+namespace Drone.Invocation.Injection
 {
     public abstract class AllocationTechnique
     {

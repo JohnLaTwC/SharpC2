@@ -21,12 +21,15 @@ namespace TeamServer.Controllers
     {
         private readonly IHandlerService _handlers;
         private readonly IServerService _server;
+        private readonly ICryptoService _crypto;
         private readonly IMapper _mapper;
 
-        public PayloadsController(IHandlerService handlerService, IServerService serverService, IMapper mapper)
+        public PayloadsController(IHandlerService handlerService, IServerService serverService, ICryptoService crypto, IMapper mapper)
         {
             _handlers = handlerService;
             _server = serverService;
+            _crypto = crypto;
+            
             _mapper = mapper;
         }
 
@@ -37,14 +40,15 @@ namespace TeamServer.Controllers
             if (h is null) return NotFound();
 
             var c2 = _server.GetC2Profile();
+            var key = _crypto.GetEncodedKey();
 
             Payload payload = format.ToLowerInvariant() switch
             {
-                "exe" => new ExePayload(h, c2),
-                "dll" => new DllPayload(h, c2),
-                "powershell" => new PoshPayload(h, c2),
-                "raw" => new RawPayload(h, c2),
-                "svc" => new ServicePayload(h, c2),
+                "exe" => new ExePayload(h, c2, key),
+                "dll" => new DllPayload(h, c2, key),
+                "powershell" => new PoshPayload(h, c2, key),
+                "raw" => new RawPayload(h, c2, key),
+                "svc" => new ServicePayload(h, c2, key),
                 
                 _ => throw new ArgumentException("Unknown payload format")
             };

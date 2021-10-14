@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Drone.DynamicInvocation.Injection
+namespace Drone.Invocation.Injection
 {
     public abstract class PayloadType
     {

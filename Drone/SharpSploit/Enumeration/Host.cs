@@ -10,7 +10,7 @@ using System.Linq;
 using System.Security.Principal;
 using System.ServiceProcess;
 
-using Drone.DynamicInvocation.Data;
+using Drone.Invocation.Data;
 using Drone.SharpSploit.Generic;
 
 namespace Drone.SharpSploit.Enumeration
@@ -97,7 +97,7 @@ namespace Drone.SharpSploit.Enumeration
         {
             try
             {
-                var pbi = DynamicInvocation.DynamicInvoke.Native.NtQueryInformationProcessBasicInformation(process.Handle);
+                var pbi = Invocation.DynamicInvoke.Native.NtQueryInformationProcessBasicInformation(process.Handle);
                 return pbi.InheritedFromUniqueProcessId;
             }
             catch
@@ -124,7 +124,7 @@ namespace Drone.SharpSploit.Enumeration
             {
                 var hToken = IntPtr.Zero;
                 
-                if (!DynamicInvocation.DynamicInvoke.Win32.Advapi32.OpenProcessToken(process.Handle, Win32.Advapi32.TokenAccess.TOKEN_ALL_ACCESS, ref hToken))
+                if (!Invocation.DynamicInvoke.Win32.Advapi32.OpenProcessToken(process.Handle, Win32.Advapi32.TokenAccess.TOKEN_ALL_ACCESS, ref hToken))
                     return "-";
 
                 using var identity = new WindowsIdentity(hToken);
@@ -141,7 +141,7 @@ namespace Drone.SharpSploit.Enumeration
             try
             {
                 var isx86 = false;
-                DynamicInvocation.DynamicInvoke.Win32.Kernel32.IsWow64Process(process.Handle, ref isx86);
+                Invocation.DynamicInvoke.Win32.Kernel32.IsWow64Process(process.Handle, ref isx86);
 
                 return isx86 ? "x86" : "x64";
             }
@@ -193,12 +193,12 @@ namespace Drone.SharpSploit.Enumeration
         {
             try
             {
-                var success = DynamicInvocation.DynamicInvoke.Win32.Advapi32.QueryServiceConfig(hService, out var serviceConfig);
+                var success = Invocation.DynamicInvoke.Win32.Advapi32.QueryServiceConfig(hService, out var serviceConfig);
                 return serviceConfig;
             }
             finally
             {
-                DynamicInvocation.DynamicInvoke.Win32.Advapi32.CloseServiceHandle(hService);
+                Invocation.DynamicInvoke.Win32.Advapi32.CloseServiceHandle(hService);
             }
         }
     }

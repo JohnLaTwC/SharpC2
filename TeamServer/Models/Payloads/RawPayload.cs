@@ -14,12 +14,13 @@ namespace TeamServer.Models
         private string _tempDroneFile;
         private string _tempShellcodeFile;
         
-        public RawPayload(Handler handler, C2Profile c2Profile) : base(handler, c2Profile) { }
+        public RawPayload(Handler handler, C2Profile c2Profile, string cryptoKey) : base(handler, c2Profile, cryptoKey)
+        { }
         
         public override async Task Generate()
         {
             // generate an exe
-            var exe = new ExePayload(Handler, C2Profile);
+            var exe = new ExePayload(Handler, C2Profile, CryptoKey);
             await exe.Generate();
 
             _tempShellcodeFile = Path.GetTempFileName().Replace(".tmp", ".bin");

@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Drone.DynamicInvocation.Data
+namespace Drone.Invocation.Data
 {
     public static class Win32
     {
