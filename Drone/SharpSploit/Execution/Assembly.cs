@@ -26,7 +26,7 @@ namespace Drone.SharpSploit.Execution
             
             // this blocks and will throw an exception when stream is closed
             try { asm.EntryPoint.Invoke(null, new object[] { args }); }
-            catch { /* pokemon */ }
+            catch (IOException) { /* pokemon */ }
 
             // clear up
             Console.Out.Flush();
