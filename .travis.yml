@@ -1,7 +1,7 @@
 language: csharp
 solution: SharpC2.sln
 mono: none
-dotnet: 6.0.100-rc.2
+dotnet: 6.0.100
 script:
  - dotnet restore
  - dotnet build
