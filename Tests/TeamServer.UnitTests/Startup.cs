@@ -15,6 +15,7 @@ namespace TeamServer.UnitTests
             services.AddSingleton<IDroneService, DroneService>();
             services.AddSingleton<IServerService, ServerService>();
             services.AddSingleton<ICredentialService, CredentialService>();
+            services.AddSingleton<ICryptoService, CryptoService>();
 
             services.AddSignalR();
         }
