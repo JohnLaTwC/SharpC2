@@ -48,6 +48,9 @@ namespace Drone
 
             while (_running)
             {
+                // check if handler has given up
+                if (t.IsCompleted) return;
+                
                 if (!_handler.GetInbound(out var messages))
                 {
                     Thread.Sleep(100);                    

