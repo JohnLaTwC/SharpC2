@@ -34,6 +34,7 @@ namespace TeamServer.Models
 
             EmbedCryptoKey(module);
             EmbedHandler(module);
+            SetSleepTime(module);
             SetBypasses(module);
             SetProcessInjectionOptions(module);
 
@@ -94,6 +95,17 @@ namespace TeamServer.Models
             var droneType = module.Types.GetType("Drone");
             var getHandler = droneType.Methods.GetMethod("get_GetHandler");
             getHandler.Body.Instructions[0].Operand = targetHandler.Methods.GetConstructor();
+        }
+
+        private void SetSleepTime(ModuleDef module)
+        {
+            var type = module.Types.GetType("Utilities");
+            
+            var sleepInterval = type.Methods.GetMethod("GetSleepInterval");
+            sleepInterval.Body.Instructions[0].Operand = C2Profile.Stage.SleepTime;
+            
+            var sleepJitter = type.Methods.GetMethod("GetSleepJitter");
+            sleepJitter.Body.Instructions[0].Operand = C2Profile.Stage.SleepJitter;
         }
 
         private void SetBypasses(ModuleDef module)

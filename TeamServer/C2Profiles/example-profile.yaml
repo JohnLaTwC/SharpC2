@@ -1,4 +1,6 @@
 Stage:
+  SleepTime: 60
+  SleepJitter: 10
   DllExport: Execute
 PostExploitation:
   BypassAmsi: false
