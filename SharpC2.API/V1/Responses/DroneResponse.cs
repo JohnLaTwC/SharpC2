@@ -6,6 +6,7 @@ namespace SharpC2.API.V1.Responses
     public class DroneResponse
     {
         public string Guid { get; set; }
+        public string Parent { get; set; }
         public string Address { get; set; }
         public string Hostname { get; set; }
         public string Username { get; set; }

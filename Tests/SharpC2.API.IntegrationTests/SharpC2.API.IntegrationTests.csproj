@@ -25,12 +25,4 @@
       <ProjectReference Include="..\..\TeamServer\TeamServer.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Content Include="nuget.config">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-    </ItemGroup>
-
 </Project>

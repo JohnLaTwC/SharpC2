@@ -34,7 +34,7 @@ namespace TeamServer.Services
             {
                 drone = new Drone(metadata);
                 
-                // new drone, send stdapi.dll
+                // may need to resend this
                 drone.TaskDrone(new DroneTask("core", "load-module")
                 {
                     Artefact = await Utilities.GetEmbeddedResource("stdapi.dll")

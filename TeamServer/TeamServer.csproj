@@ -10,7 +10,7 @@
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
         <PackageReference Include="CommandLineParser" Version="2.8.0" />
         <PackageReference Include="dnlib" Version="3.3.3" />
-        <PackageReference Include="DonutCore" Version="1.0.1" />
+        <PackageReference Include="DonutCore" Version="1.0.0" />
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,10 +24,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="external-packages\**" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Remove="Resources\Drone.dll" />
     </ItemGroup>
 
@@ -38,14 +34,6 @@
       <EmbeddedResource Include="Resources\drone_svc.exe" />
       <None Remove="Resources\drone.ps1" />
       <EmbeddedResource Include="Resources\drone.ps1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="external-packages\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Remove="external-packages\**" />
     </ItemGroup>
 
     <ItemGroup>

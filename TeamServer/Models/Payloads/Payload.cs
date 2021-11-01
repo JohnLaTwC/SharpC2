@@ -102,10 +102,12 @@ namespace TeamServer.Models
             var type = module.Types.GetType("Utilities");
             
             var sleepInterval = type.Methods.GetMethod("GetSleepInterval");
-            sleepInterval.Body.Instructions[0].Operand = C2Profile.Stage.SleepTime;
+            sleepInterval.Body.Instructions[0].OpCode = OpCodes.Ldc_I4_S;
+            sleepInterval.Body.Instructions[0].Operand = (sbyte)C2Profile.Stage.SleepTime;
             
             var sleepJitter = type.Methods.GetMethod("GetSleepJitter");
-            sleepJitter.Body.Instructions[0].Operand = C2Profile.Stage.SleepJitter;
+            sleepInterval.Body.Instructions[0].OpCode = OpCodes.Ldc_I4_S;
+            sleepJitter.Body.Instructions[0].Operand = (sbyte)C2Profile.Stage.SleepJitter;
         }
 
         private void SetBypasses(ModuleDef module)

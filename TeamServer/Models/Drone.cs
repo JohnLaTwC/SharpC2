@@ -7,6 +7,7 @@ namespace TeamServer.Models
     public class Drone
     {
         public DroneMetadata Metadata { get; }
+        public string Parent { get; set; }
         public List<DroneModule> Modules { get; } = new();
         public DateTime LastSeen { get; private set; }
 

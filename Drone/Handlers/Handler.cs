@@ -22,25 +22,25 @@ namespace Drone.Handlers
             Metadata = metadata;
         }
 
-        public void QueueOutbound(MessageEnvelope message)
+        public void QueueOutbound(MessageEnvelope envelope)
         {
-            OutboundQueue.Enqueue(message);
+            OutboundQueue.Enqueue(envelope);
         }
-        
-        public bool GetInbound(out IEnumerable<MessageEnvelope> messages)
+
+        public bool GetInbound(out IEnumerable<MessageEnvelope> envelopes)
         {
             if (InboundQueue.IsEmpty)
             {
-                messages = null;
+                envelopes = null;
                 return false;
             }
 
             List<MessageEnvelope> temp = new();
 
-            while (InboundQueue.TryDequeue(out var message))
-                temp.Add(message);
+            while (InboundQueue.TryDequeue(out var envelope))
+                temp.Add(envelope);
 
-            messages = temp.ToArray();
+            envelopes = temp.ToArray();
             return true;
         }
 
@@ -56,5 +56,11 @@ namespace Drone.Handlers
 
         public abstract Task Start();
         public abstract void Stop();
+
+        protected enum HandlerMode
+        {
+            Client,
+            Server
+        }
     }
 }

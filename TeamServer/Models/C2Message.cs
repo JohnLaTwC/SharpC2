@@ -27,7 +27,8 @@ namespace TeamServer.Models
         {
             DroneModule = 0,
             DroneTask = 1,
-            DroneTaskUpdate = 2
+            DroneTaskUpdate = 2,
+            NewLink = 3
         }
     }
 }

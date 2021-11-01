@@ -18,7 +18,7 @@ namespace TeamServer.Models
         {
             var drone = await GetDroneModuleDef();
             AddUnmanagedExport(drone);
-
+            
             var opts = new ModuleWriterOptions(drone)
             {
                 PEHeadersOptions = { Machine = Machine.AMD64 },
