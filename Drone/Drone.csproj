@@ -10,6 +10,7 @@
         <PackageVersion />
         <Authors />
         <AssemblyName>drone</AssemblyName>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

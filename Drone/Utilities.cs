@@ -96,7 +96,7 @@ namespace Drone
             return definition;
         }
 
-        private static int GetSleepInterval => 60;
+        private static int GetSleepInterval => 1;
         private static int GetSleepJitter => 10;
         private static bool GetBypassAmsi => false;
         private static bool GetBypassEtw => true;

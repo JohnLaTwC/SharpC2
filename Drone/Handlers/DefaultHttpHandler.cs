@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -94,10 +95,11 @@ namespace Drone.Handlers
         {
             if (response.Length == 0) return;
 
-            var envelope = response.Deserialize<MessageEnvelope>();
-            if (envelope is null) return;
+            var envelopes = response.Deserialize<MessageEnvelope[]>();
+            if (!envelopes.Any()) return;
 
-            InboundQueue.Enqueue(envelope);
+            foreach (var envelope in envelopes)
+                InboundQueue.Enqueue(envelope);
         }
 
         public override void Stop()

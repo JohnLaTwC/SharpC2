@@ -75,7 +75,7 @@ namespace Drone
         private void HandleMessageEnvelope(MessageEnvelope envelope)
         {
             // if not for this drone, send to children
-            if (!envelope.Drone.Equals(_metadata.Guid))
+            if (envelope.Drone is not null && !envelope.Drone.Equals(_metadata.Guid))
             {
                 foreach (var child in _children)
                     child.QueueOutbound(envelope);

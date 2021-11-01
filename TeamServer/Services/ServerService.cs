@@ -104,7 +104,8 @@ namespace TeamServer.Services
                     break;
                 
                 case C2Message.MessageType.NewLink:
-                    
+                    var parentMetadata = message.Data.Deserialize<DroneMetadata>();
+                    drone.Parent = parentMetadata.Guid;
                     break;
                 
                 default:
