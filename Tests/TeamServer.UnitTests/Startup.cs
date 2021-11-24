@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
 
 using TeamServer.Interfaces;
 using TeamServer.Services;
@@ -17,6 +18,7 @@ namespace TeamServer.UnitTests
             services.AddSingleton<ICredentialService, CredentialService>();
             services.AddSingleton<ICryptoService, CryptoService>();
 
+            services.AddAutoMapper(typeof(Program));
             services.AddSignalR();
         }
     }
