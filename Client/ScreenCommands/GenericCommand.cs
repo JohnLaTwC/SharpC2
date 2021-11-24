@@ -3,9 +3,9 @@ using SharpC2.Models;
 
 namespace SharpC2.ScreenCommands
 {
-    public class DroneCommand : ScreenCommand
+    public class GenericCommand : ScreenCommand
     {
-        public DroneCommand(string name, string description, List<Argument> arguments, Screen.Callback callback)
+        public GenericCommand(string name, string description, Screen.Callback callback, List<Argument> arguments = null)
         {
             Name = name;
             Description = description;

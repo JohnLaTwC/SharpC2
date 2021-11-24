@@ -137,5 +137,33 @@ namespace SharpC2.Services
         }
 
         #endregion
+
+        #region Credentials
+
+        public async Task<IEnumerable<CredentialRecord>> GetCredentials()
+        {
+            var response = await _client.GetCredentials();
+            return _mapper.Map<IEnumerable<CredentialRecordResponse>, IEnumerable<CredentialRecord>>(response);
+        }
+
+        public async Task<bool> AddCredential(string username, string password, string domain = ".", string source = "manual")
+        {
+            var request = new AddCredentialRecordRequest
+            {
+                Username = username,
+                Domain = domain,
+                Password = password,
+                Source = source
+            };
+
+            return await _client.AddCredential(request);
+        }
+
+        public async Task<bool> DeleteCredential(string guid)
+        {
+            return await _client.DeleteCredential(guid);
+        }
+
+        #endregion
     }
 }

@@ -25,7 +25,7 @@ namespace SharpC2.Screens
             _apiService = apiService;
             _signalRService = signalRService;
 
-            Commands.Add(new ListHandlers(ListHandlers));
+            Commands.Add(new GenericCommand("list", "List Handlers", ListHandlers));
             Commands.Add(new SetHandler(SetHandlerParameter));
             Commands.Add(new StartHandler(StartHandler));
             Commands.Add(new StopHandler(StopHandler));

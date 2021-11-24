@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using SharpC2.Models;
 
 namespace SharpC2.ScreenCommands
@@ -14,9 +13,9 @@ namespace SharpC2.ScreenCommands
         public override string Name => "hide";
         public override string Description => "Hide an inactive Drone.";
 
-        public override List<Argument> Arguments => new List<Argument>
+        public override List<Argument> Arguments => new()
         {
-            new() { Name = "drone", Optional = false }
+            new Argument { Name = "drone", Optional = false }
         };
         
         public override Screen.Callback Execute { get; }

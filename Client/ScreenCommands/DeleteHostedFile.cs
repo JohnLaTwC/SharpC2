@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using SharpC2.Models;
 
 namespace SharpC2.ScreenCommands

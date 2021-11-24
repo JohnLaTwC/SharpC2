@@ -24,7 +24,7 @@ namespace SharpC2.Screens
             _apiService = apiService;
             _signalRService = signalRService;
 
-            Commands.Add(new ListHostedFiles(ListHostedFiles));
+            Commands.Add(new GenericCommand("list", "List hosted files", ListHostedFiles));
             Commands.Add(new AddHostedFile(AddHostedFile));
             Commands.Add(new DeleteHostedFile(DeleteHostedFile));
             Commands.Add(new BackScreen(StopScreen));

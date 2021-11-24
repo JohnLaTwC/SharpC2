@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-
 using SharpC2.Models;
 
 namespace SharpC2.ScreenCommands
@@ -14,9 +13,9 @@ namespace SharpC2.ScreenCommands
         public override string Name => "stop";
         public override string Description => "Stop a Handler";
 
-        public override List<Argument> Arguments => new List<Argument>
+        public override List<Argument> Arguments => new()
         {
-            new()
+            new Argument
             {
                 Name = "handler",
                 Optional = false

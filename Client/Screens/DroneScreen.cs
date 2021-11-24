@@ -31,13 +31,14 @@ namespace SharpC2.Screens
             _signalRService = signalRService;
             _screenService = screenService;
 
-            Commands.Add(new ListDrones(ListDrones));
+            Commands.Add(new GenericCommand("list", "List Drones", ListDrones));
             Commands.Add(new OpenScreen("interact", "Interact with a Drone", InteractWithDrone, new List<ScreenCommand.Argument>
             {
                 new() {Name = "drone", Optional = false}
             }));
             Commands.Add(new OpenScreen("handlers", "Manage Handlers", OpenHandlerScreen));
             Commands.Add(new OpenScreen("hosted-files", "Manage hosted files", OpenHostedFilesScreen));
+            Commands.Add(new OpenScreen("credentials", "Manage credentials", OpenCredScreen));
             Commands.Add(new GeneratePayload(GeneratePayload));
             Commands.Add(new HideDrone(HideDrone));
             Commands.Add(new ExitClient(StopScreen));
@@ -160,6 +161,12 @@ namespace SharpC2.Screens
         private async Task OpenHostedFilesScreen(string[] args)
         {
             using var screen = (HostedFilesScreen)_screenService.GetScreen(ScreenService.ScreenType.HostedFiles);
+            await screen.Show();
+        }
+        
+        private async Task OpenCredScreen(string[] args)
+        {
+            var screen = (CredentialScreen)_screenService.GetScreen(ScreenService.ScreenType.Credentials);
             await screen.Show();
         }
 

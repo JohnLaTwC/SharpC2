@@ -24,6 +24,7 @@ namespace SharpC2.Services
                 ScreenType.DroneInteract => new DroneInteraction(_apiService, _signalRService),
                 ScreenType.Handlers => new HandlerScreen(_apiService, _signalRService),
                 ScreenType.HostedFiles => new HostedFilesScreen(_apiService, _signalRService),
+                ScreenType.Credentials => new CredentialScreen(_apiService, _signalRService),
 
                 _ => throw new ArgumentOutOfRangeException(nameof(type))
             };
@@ -36,7 +37,8 @@ namespace SharpC2.Services
             Drones,
             DroneInteract,
             Handlers,
-            HostedFiles
+            HostedFiles,
+            Credentials
         }
     }
 }
