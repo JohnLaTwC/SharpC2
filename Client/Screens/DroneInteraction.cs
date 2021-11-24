@@ -188,13 +188,13 @@ namespace SharpC2.Screens
         private void OnDroneTasked(DroneMetadata metadata, DroneTask task)
         {
             if (!metadata.Guid.Equals(_drone.Guid)) return;
-            Console.PrintSuccess($"Tasked Drone to run {task.Command}.");
+            Console.PrintSuccess($"Tasked Drone to run {task.Command}: {task.TaskGuid}.");
         }
         
         private void OnDroneDataSent(DroneMetadata metadata, int messageSize)
         {
             if (!metadata.Guid.Equals(_drone.Guid)) return;
-            Console.PrintSuccess($"Drone checked in.  Sent {messageSize} bytes.");
+            Console.PrintSuccess($"Drone checked in. Sent {messageSize} bytes.");
         }
 
         private void OnDroneTaskRunning(DroneMetadata metadata, DroneTaskUpdate update)
@@ -218,7 +218,7 @@ namespace SharpC2.Screens
         private void OnDroneTaskCancelled(DroneMetadata metadata, DroneTaskUpdate update)
         {
             if (!metadata.Guid.Equals(_drone.Guid)) return;
-            Console.PrintSuccess($"Drone task {update.TaskGuid} has been cancelled.");
+            Console.PrintWarning($"Drone task {update.TaskGuid} has been cancelled.");
             
             if (update.Result?.Length > 0)
                 Console.PrintOutput(Encoding.UTF8.GetString(update.Result));
@@ -227,7 +227,7 @@ namespace SharpC2.Screens
         private void OnDroneTaskAborted(DroneMetadata metadata, DroneTaskUpdate update)
         {
             if (!metadata.Guid.Equals(_drone.Guid)) return;
-            Console.PrintSuccess($"Drone task {update.TaskGuid} has thrown an exception.");
+            Console.PrintWarning($"Drone task {update.TaskGuid} has thrown an exception.");
             
             if (update.Result?.Length > 0)
                 Console.PrintOutput(Encoding.UTF8.GetString(update.Result));

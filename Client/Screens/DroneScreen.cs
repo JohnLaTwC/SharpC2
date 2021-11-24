@@ -88,7 +88,8 @@ namespace SharpC2.Screens
 
             if (argument.Name.Equals("drone", StringComparison.OrdinalIgnoreCase))
             {
-                result = _drones?.Where(d => d.Guid.StartsWith(typedWord, StringComparison.OrdinalIgnoreCase))
+                result = _drones?.Where(d => d.Guid.StartsWith(typedWord, StringComparison.OrdinalIgnoreCase)
+                    && !d.Hidden)
                     .Select(d => new CompletionItem
                     {
                         StartIndex = previousWordStart + 1,
@@ -180,8 +181,9 @@ namespace SharpC2.Screens
                 var existing = _drones.FirstOrDefault(d => d.Guid.Equals(drone.Guid));
                 if (existing is not null)
                 {
-                    var index = _drones.IndexOf(existing);
-                    _drones[index] = drone;
+                    // only need to update these ones, nothing else should change
+                    existing.Modules = drone.Modules;
+                    existing.LastSeen = drone.LastSeen;
                 }
                 else
                 {
