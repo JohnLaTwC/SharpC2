@@ -1,11 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2021-11-24
+### Added
+- SMB Drone.
+### Changed
+- Improved autocompletion in Client.
+
 ## [0.4.2] - 2021-09-01
 ### Added
 - New HostedFiles API endpoint to host arbitrary files on the default HTTP Handler.
 - New Client screen to call said API.
-- PowerShell Drone Module
+- PowerShell Drone Module.
 
 ## [0.4.0] - 2021-08-30
 ### Added
