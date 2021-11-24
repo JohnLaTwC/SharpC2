@@ -10,12 +10,11 @@ using System.Collections;
 
 namespace SharpC2
 {
-    public sealed class GenericObjectResult : SharpSploitResult
+    public sealed class GenericObjectResult : Result
     {
         public object Result { get; }
-
-        protected internal override IList<SharpSploitResultProperty> ResultProperties =>
-            new List<SharpSploitResultProperty>
+        protected internal override IList<ResultProperty> ResultProperties =>
+            new List<ResultProperty>
             {
                 new()
                 {
@@ -30,71 +29,65 @@ namespace SharpC2
         }
     }
 
-    public class SharpSploitResultList<T> : IList<T> where T : SharpSploitResult
+    public class ResultList<T> : IList<T> where T : Result
     {
-        private List<T> Results { get; } = new();
+        private List<T> Results { get; } = new List<T>();
 
         public int Count => Results.Count;
         public bool IsReadOnly => ((IList<T>)Results).IsReadOnly;
-
+        
         public override string ToString()
         {
             if (Results.Count <= 0) return "";
-
+            
             var labels = new StringBuilder();
             var underlines = new StringBuilder();
             var rows = new List<StringBuilder>();
-
+            
             for (var i = 0; i < Results.Count; i++)
+            {
                 rows.Add(new StringBuilder());
-
+            }
+            
             for (var i = 0; i < Results[0].ResultProperties.Count; i++)
             {
                 labels.Append(Results[0].ResultProperties[i].Name);
                 underlines.Append(new string('-', Results[0].ResultProperties[i].Name.Length));
-
-                var maxPropLen = 0;
-
+                var maxproplen = 0;
+                
                 for (var j = 0; j < rows.Count; j++)
                 {
                     var property = Results[j].ResultProperties[i];
-                    var valueString = property.Value?.ToString();
-
+                    var valueString = property.Value is null ? "-" : property.Value.ToString();
                     rows[j].Append(valueString);
-
-                    if (maxPropLen < valueString?.Length)
-                        maxPropLen = valueString.Length;
+                    
+                    if (maxproplen < valueString.Length)
+                        maxproplen = valueString.Length;
                 }
-
-                if (i == Results[0].ResultProperties.Count - 1) continue;
+                
+                if (i != Results[0].ResultProperties.Count - 1)
                 {
-                    labels.Append(new string(' ',
-                        Math.Max(2, maxPropLen + 2 - Results[0].ResultProperties[i].Name.Length)));
-                    underlines.Append(new string(' ',
-                        Math.Max(2, maxPropLen + 2 - Results[0].ResultProperties[i].Name.Length)));
-
+                    labels.Append(new string(' ', Math.Max(2, maxproplen + 2 - Results[0].ResultProperties[i].Name.Length)));
+                    underlines.Append(new string(' ', Math.Max(2, maxproplen + 2 - Results[0].ResultProperties[i].Name.Length)));
+                    
                     for (var j = 0; j < rows.Count; j++)
                     {
                         var property = Results[j].ResultProperties[i];
-                        var valueString = property.Value.ToString();
-
-                        if (valueString != null)
-                            rows[j].Append(new string(' ',
-                                Math.Max(Results[0].ResultProperties[i].Name.Length - valueString.Length + 2,
-                                    maxPropLen - valueString.Length + 2)));
+                        var valueString = property.Value is null ? "-" : property.Value.ToString();
+                        rows[j].Append(new string(' ', Math.Max(Results[0].ResultProperties[i].Name.Length - valueString.Length + 2, maxproplen - valueString.Length + 2)));
                     }
                 }
             }
-
+            
             labels.AppendLine();
             labels.Append(underlines);
-
+            
             foreach (var row in rows)
             {
                 labels.AppendLine();
                 labels.Append(row);
             }
-
+            
             return labels.ToString();
         }
 
@@ -156,14 +149,14 @@ namespace SharpC2
         }
     }
 
-    public abstract class SharpSploitResult
+    public abstract class Result
     {
-        protected internal abstract IList<SharpSploitResultProperty> ResultProperties { get; }
+        protected internal abstract IList<ResultProperty> ResultProperties { get; }
     }
 
-    public class SharpSploitResultProperty
+    public class ResultProperty
     {
-        public string Name { get; init; }
-        public object Value { get; init; }
+        public string Name { get; set; }
+        public object Value { get; set; }
     }
 }

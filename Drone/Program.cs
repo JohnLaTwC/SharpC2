@@ -1,6 +1,6 @@
 ﻿namespace Drone
 {
-    public class Program
+    internal static class Program
     {
         private static void Main(string[] args)
         {

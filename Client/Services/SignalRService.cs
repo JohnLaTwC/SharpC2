@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
+using AutoMapper;
+
 using Microsoft.AspNetCore.SignalR.Client;
 
 using SharpC2.API.V1.Responses;
@@ -12,66 +14,121 @@ namespace SharpC2.Services
 {
     public class SignalRService
     {
-        private readonly CertificateService _certs;
-
-        public SignalRService(CertificateService certs)
+        public string Server { get; set; }
+        public string Port { get; set; }
+        public string Nick { get; set; }
+        public string Password { get; set; }
+        
+        private readonly SslService _sslService;
+        private readonly IMapper _mapper;
+        
+        public SignalRService(SslService sslService, IMapper mapper)
         {
-            _certs = certs;
+            _sslService = sslService;
+            _mapper = mapper;
         }
         
-        // Handlers
-        public event Action<HandlerResponse> HandlerLoaded;
-        public event Action<HandlerResponse> HandlerStarted;
-        public event Action<HandlerResponse> HandlerStopped;
+        // Handler Events
+        public event Action<Handler> HandlerStarted;
+        public event Action<Handler> HandlerStopped;
+        public event Action<string, string> HandlerParameterSet;
         
-        // Hosted Files
+        // Hosted File Events
         public event Action<string> HostedFileAdded;
         public event Action<string> HostedFileDeleted;
         
-        //Drones
+        // Drone Events
         public event Action<DroneMetadata> DroneCheckedIn;
-        public event Action<string> DroneDeleted;
-        public event Action<DroneMetadata, DroneModule> DroneModuleLoaded;
-        public event Action<DroneMetadata, DroneTaskResponse> DroneTasked;
+        public event Action<DroneMetadata, DroneTask> DroneTasked;
         public event Action<DroneMetadata, int> DroneDataSent;
         public event Action<DroneMetadata, DroneTaskUpdate> DroneTaskRunning;
         public event Action<DroneMetadata, DroneTaskUpdate> DroneTaskComplete;
         public event Action<DroneMetadata, DroneTaskUpdate> DroneTaskCancelled;
         public event Action<DroneMetadata, DroneTaskUpdate> DroneTaskAborted;
+        public event Action<DroneMetadata, DroneModule> DroneModuleLoaded;
 
-        public async Task Connect(string hostname, string port, string nick, string pass)
+        public async Task Connect()
         {
             var connection = new HubConnectionBuilder()
-                .WithUrl($"https://{hostname}:{port}/MessageHub", o =>
+                .WithUrl($"https://{Server}:{Port}/MessageHub", o =>
                 {
-                    var basic = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{nick}:{pass}"));
+                    var basic = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{Nick}:{Password}"));
                     o.Headers.Add("Authorization", $"Basic {basic}");
-                    o.HttpMessageHandlerFactory = handler => new HttpClientHandler
+                    o.HttpMessageHandlerFactory = _ => new HttpClientHandler
                     {
-                        ServerCertificateCustomValidationCallback = _certs.RemoteCertificateValidationCallback
+                        ServerCertificateCustomValidationCallback = _sslService.RemoteCertificateValidationCallback
                     };
                 })
                 .Build();
 
-            
             await connection.StartAsync();
 
-            connection.On<HandlerResponse>("HandlerLoaded", h => HandlerLoaded?.Invoke(h));
-            connection.On<HandlerResponse>("HandlerStarted", h => HandlerStarted?.Invoke(h));
-            connection.On<HandlerResponse>("HandlerStopped", h => HandlerStopped?.Invoke(h));
-            
-            connection.On<string>("HostedFileAdded", filename => HostedFileAdded?.Invoke(filename));
-            connection.On<string>("HostedFileDeleted", filename => HostedFileDeleted?.Invoke(filename));
+            connection.On<string, string>("HandlerParameterSet", OnHandlerParameterSet);
+            connection.On<HandlerResponse>("HandlerStarted", OnHandlerStarted);
+            connection.On<HandlerResponse>("HandlerStopped", OnHandlerStopped);
 
-            connection.On<DroneMetadata>("DroneCheckedIn", d => DroneCheckedIn?.Invoke(d));
-            connection.On<string>("DroneDeleted", d => DroneDeleted?.Invoke(d));
-            connection.On<DroneMetadata, DroneModule>("DroneModuleLoaded", (d, m) => DroneModuleLoaded?.Invoke(d, m));
-            connection.On<DroneMetadata, DroneTaskResponse>("DroneTasked", (d, t) => DroneTasked?.Invoke(d, t));
-            connection.On<DroneMetadata, int>("DroneDataSent", (d, s) => DroneDataSent?.Invoke(d, s));
-            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskRunning", (r, t) => DroneTaskRunning?.Invoke(r, t));
-            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskComplete", (d, t) => DroneTaskComplete?.Invoke(d, t));
-            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskCancelled", (d, t) => DroneTaskCancelled?.Invoke(d, t));
-            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskAborted", (d, t) => DroneTaskAborted?.Invoke(d, t));
+            connection.On<string>("HostedFileAdded", OnHostedFileAdded);
+            connection.On<string>("HostedFileDeleted", OnHostedFileDeleted);
+
+            connection.On<DroneMetadata>("DroneCheckedIn", OnDroneCheckedIn);
+            connection.On<DroneMetadata, DroneTaskResponse>("DroneTasked", OnDroneTasked);
+            connection.On<DroneMetadata, int>("DroneDataSent", OnDroneDataSent);
+            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskRunning", OnDroneTaskRunning);
+            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskComplete", OnDroneTaskComplete);
+            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskCancelled", OnDroneTaskCancelled);
+            connection.On<DroneMetadata, DroneTaskUpdate>("DroneTaskAborted", OnDroneTaskAborted);
+            connection.On<DroneMetadata, DroneModuleResponse>("DroneModuleLoaded", OnDroneModuleLoaded);
+        }
+
+        private void OnHandlerStarted(HandlerResponse handlerResponse)
+        {
+            var handler = _mapper.Map<HandlerResponse, Handler>(handlerResponse);
+            HandlerStarted?.Invoke(handler);
+        }
+        
+        private void OnHandlerStopped(HandlerResponse handlerResponse)
+        {
+            var handler = _mapper.Map<HandlerResponse, Handler>(handlerResponse);
+            HandlerStopped?.Invoke(handler);
+        }
+        
+        private void OnHandlerParameterSet(string key, string value)
+            => HandlerParameterSet?.Invoke(key, value);
+
+        private void OnHostedFileAdded(string filename)
+            => HostedFileAdded?.Invoke(filename);
+
+        private void OnHostedFileDeleted(string filename)
+            => HostedFileDeleted?.Invoke(filename);
+
+        private void OnDroneCheckedIn(DroneMetadata metadata)
+            => DroneCheckedIn?.Invoke(metadata);
+
+        private void OnDroneTasked(DroneMetadata metadata, DroneTaskResponse taskResponse)
+        {
+            var task = _mapper.Map<DroneTaskResponse, DroneTask>(taskResponse);
+            DroneTasked?.Invoke(metadata, task);
+        }
+        
+        private void OnDroneDataSent(DroneMetadata metadata, int messageSize)
+            => DroneDataSent?.Invoke(metadata, messageSize);
+
+        private void OnDroneTaskRunning(DroneMetadata metadata, DroneTaskUpdate update)
+            => DroneTaskRunning?.Invoke(metadata, update);
+        
+        private void OnDroneTaskComplete(DroneMetadata metadata, DroneTaskUpdate update)
+            => DroneTaskComplete?.Invoke(metadata, update);
+        
+        private void OnDroneTaskCancelled(DroneMetadata metadata, DroneTaskUpdate update)
+            => DroneTaskCancelled?.Invoke(metadata, update);
+        
+        private void OnDroneTaskAborted(DroneMetadata metadata, DroneTaskUpdate update)
+            => DroneTaskAborted?.Invoke(metadata, update);
+
+        private void OnDroneModuleLoaded(DroneMetadata metadata, DroneModuleResponse response)
+        {
+            var module = _mapper.Map<DroneModuleResponse, DroneModule>(response);
+            DroneModuleLoaded?.Invoke(metadata, module);
         }
     }
 }

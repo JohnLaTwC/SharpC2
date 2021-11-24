@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 using SharpC2.API.V1.Responses;
 
@@ -9,6 +10,8 @@ namespace TeamServer.Interfaces
     public interface IMessageHub
     {
         Task HandlerLoaded(HandlerResponse handler);
+        Task HandlerParameterSet(string key, string value);
+        Task HandlerParametersSet(Dictionary<string, string> parameters);
         Task HandlerStarted(HandlerResponse handler);
         Task HandlerStopped(HandlerResponse handler);
 
@@ -17,7 +20,7 @@ namespace TeamServer.Interfaces
 
         Task DroneCheckedIn(DroneMetadata metadata);
         Task DroneDeleted(string droneGuid);
-        Task DroneModuleLoaded(DroneMetadata metadata, DroneModule module);
+        Task DroneModuleLoaded(DroneMetadata metadata, DroneModuleResponse module);
         Task DroneTasked(DroneMetadata metadata, DroneTaskResponse task);
         Task DroneDataSent(DroneMetadata metadata, int messageSize);
         Task DroneTaskRunning(DroneMetadata metadata, DroneTaskUpdate task);

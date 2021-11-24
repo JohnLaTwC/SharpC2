@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using PrettyPrompt.Consoles;
 
@@ -6,7 +6,12 @@ namespace SharpC2
 {
     public static class Extensions
     {
-        public static void PrintMessage(this IConsole console, string message)
+        public static void PrintOutput(this IConsole console, string output)
+        {
+            console.WriteLine($"{Environment.NewLine}{output}{Environment.NewLine}");
+        }
+        
+        public static void PrintSuccess(this IConsole console, string message)
         {
             var currentColour = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;

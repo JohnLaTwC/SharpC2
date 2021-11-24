@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Builder;
@@ -40,8 +39,6 @@ namespace TeamServer.Handlers
             // this throws if the handler doesn't have the required parameters set
             base.Start();
 
-            TokenSource = new CancellationTokenSource();
-
             var host = new HostBuilder()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -55,7 +52,7 @@ namespace TeamServer.Handlers
             return host.RunAsync(TokenSource.Token);
         }
 
-        private void ConfigureKestrel(KestrelServerOptions k)
+        private static void ConfigureKestrel(KestrelServerOptions k)
         {
             k.AddServerHeader = false;
         }

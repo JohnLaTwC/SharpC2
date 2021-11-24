@@ -14,7 +14,7 @@ using TeamServer.Models;
 
 namespace TeamServer
 {
-    public class Program
+    internal static class Program
     {
         private static IHandlerService _handlerService;
         private static IServerService _serverService;

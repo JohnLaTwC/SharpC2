@@ -6,11 +6,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using SharpC2.API;
+using SharpC2.API.V1;
 using SharpC2.API.V1.Responses;
 
 using TeamServer.Interfaces;
 using TeamServer.Models;
+using TeamServer.Services;
 
 namespace TeamServer.Controllers
 {
@@ -19,41 +20,39 @@ namespace TeamServer.Controllers
     [Route(Routes.V1.Payloads)]
     public class PayloadsController : ControllerBase
     {
+        private readonly IPayloadService _payloads;
         private readonly IHandlerService _handlers;
-        private readonly IServerService _server;
-        private readonly ICryptoService _crypto;
+        
         private readonly IMapper _mapper;
 
-        public PayloadsController(IHandlerService handlerService, IServerService serverService, ICryptoService crypto, IMapper mapper)
+        public PayloadsController(IHandlerService handlerService, IPayloadService payloads, IMapper mapper)
         {
             _handlers = handlerService;
-            _server = serverService;
-            _crypto = crypto;
+            _payloads = payloads;
             
             _mapper = mapper;
         }
 
+        [HttpGet("formats")]
+        public IActionResult GetPayloadFormats()
+        {
+            var formats = _payloads.GetFormats();
+            return Ok(formats);
+        }
+        
+
         [HttpGet("{handler}/{format}")]
         public async Task<IActionResult> GetPayload(string handler, string format)
         {
+            // get the handler
             var h = _handlers.GetHandler(handler);
-            if (h is null) return NotFound();
+            if (h is null) return NotFound("Handler not found");
 
-            var c2 = _server.GetC2Profile();
-            var key = _crypto.GetEncodedKey();
+            // parse the format
+            if (!Enum.TryParse(format, true, out PayloadService.PayloadFormat payloadFormat))
+                return BadRequest("Invalid payload format");
 
-            Payload payload = format.ToLowerInvariant() switch
-            {
-                "exe" => new ExePayload(h, c2, key),
-                "dll" => new DllPayload(h, c2, key),
-                "powershell" => new PoshPayload(h, c2, key),
-                "raw" => new RawPayload(h, c2, key),
-                "svc" => new ServicePayload(h, c2, key),
-                
-                _ => throw new ArgumentException("Unknown payload format")
-            };
-            
-            await payload.Generate();
+            var payload = await _payloads.GeneratePayload(payloadFormat, h);
             
             var response = _mapper.Map<Payload, PayloadResponse>(payload);
             return Ok(response);

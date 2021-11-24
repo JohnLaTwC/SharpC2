@@ -8,6 +8,6 @@ namespace TeamServer.Hubs
     [Authorize]
     public class MessageHub : Hub<IMessageHub>
     {
-        
+        // methods defined in IMessageHub
     }
 }

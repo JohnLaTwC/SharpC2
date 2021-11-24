@@ -1,29 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using CommandLine;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using SharpC2.Screens;
 using SharpC2.Services;
 
 namespace SharpC2
 {
-    internal class Options
-    {
-        [Option('s', "server", Required = true, HelpText = "IP or hostname of Team Server.")]
-        public string Server { get; set; }
-        
-        [Option('n', "nick", Required = true, HelpText = "Nickname to connect with.")]
-        public string Nick { get; set; }
-        
-        [Option('p', "password", Required = true, HelpText = "Team Server's shared password.")]
-        public string Password { get; set; }
-    }
-
     internal static class Program
     {
         private static async Task Main(string[] args)
@@ -37,28 +23,27 @@ namespace SharpC2
         private static async Task RunOptions(Options opts)
         {
             var sp = BuildServiceProvider();
-            var api = sp.GetRequiredService<ApiService>();
-            var factory = sp.GetRequiredService<ScreenFactory>();
-            var signalR = sp.GetRequiredService<SignalRService>();
 
-            api.InitClient(opts.Server, "8443", opts.Nick, opts.Password);
+            var apiService = sp.GetRequiredService<ApiService>();
+            apiService.Server = opts.Server;
+            apiService.Port = opts.Port;
+            apiService.Nick = opts.Nick;
+            apiService.Password = opts.Password;
+            apiService.IgnoreSsl = opts.IgnoreSsl;
+            apiService.StartClient();
 
-            // test authentication
-            var handlers = await api.GetHandlers();
+            var signalRService = sp.GetRequiredService<SignalRService>();
+            signalRService.Server = opts.Server;
+            signalRService.Port = opts.Port;
+            signalRService.Nick = opts.Nick;
+            signalRService.Password = opts.Password;
+            await signalRService.Connect();
 
-            if (!handlers.Any())
-            {
-                Console.WriteLine("[x] Authentication failed");
-                return;
-            }
+            var screenService = sp.GetRequiredService<ScreenService>();
+            var dashboard = screenService.GetScreen(ScreenService.ScreenType.Drones);
 
-            // connect to SignalR
-            await signalR.Connect(opts.Server, "8443", opts.Nick, opts.Password);
-            
-            Console.Clear();
-
-            using var droneScreen = (DroneScreen) factory.GetScreen(ScreenFactory.ScreenType.Drones);
-            await droneScreen.Show();
+            Console.WriteLine();
+            await dashboard.Show();
         }
 
         private static void PrintLogo()
@@ -72,23 +57,23 @@ namespace SharpC2
             Console.WriteLine(@"    @_xpn_                        ");
             Console.WriteLine();
         }
+        
+        private static ServiceProvider BuildServiceProvider()
+        {
+            var serviceCollection = new ServiceCollection()
+                .AddSingleton<SslService>()
+                .AddSingleton<ApiService>()
+                .AddSingleton<SignalRService>()
+                .AddSingleton<ScreenService>()
+                .AddAutoMapper(typeof(Program));
+
+            return serviceCollection.BuildServiceProvider();
+        }
 
         private static async Task HandleParseErrors(IEnumerable<Error> errs)
         {
             foreach (var err in errs)
                 await Console.Error.WriteLineAsync(err?.ToString());
-        }
-
-        private static ServiceProvider BuildServiceProvider()
-        {
-            var sp = new ServiceCollection()
-                .AddSingleton<CertificateService>()
-                .AddSingleton<ApiService>()
-                .AddSingleton<SignalRService>()
-                .AddSingleton<ScreenFactory>()
-                .AddAutoMapper(typeof(Program));
-
-            return sp.BuildServiceProvider();
         }
     }
 }

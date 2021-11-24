@@ -8,8 +8,8 @@ namespace TeamServer.Models
 
         public class StageBlock
         {
-            public int SleepTime { get; set; } = 60;
-            public int SleepJitter { get; set; } = 10;
+            public string SleepTime { get; set; } = "60";
+            public string SleepJitter { get; set; } = "10";
             public string DllExport { get; set; } = "Execute";
         }
 

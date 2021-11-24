@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using AutoMapper;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using SharpC2.API;
+
+using SharpC2.API.V1;
 using SharpC2.API.V1.Requests;
 using SharpC2.API.V1.Responses;
+
 using TeamServer.Hubs;
 using TeamServer.Interfaces;
 using TeamServer.Models;

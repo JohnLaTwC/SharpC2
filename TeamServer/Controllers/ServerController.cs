@@ -5,7 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using SharpC2.API;
+using SharpC2.API.V1;
 using SharpC2.API.V1.Requests;
 using SharpC2.API.V1.Responses;
 

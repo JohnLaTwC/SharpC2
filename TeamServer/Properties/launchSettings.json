@@ -23,7 +23,7 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "https://localhost:8443",
-      "commandLineArgs": "-p Passw0rd!",
+      "commandLineArgs": "-p Passw0rd! -y C:\\Tools\\SharpC2\\TeamServer\\C2Profiles\\example-profile.yaml",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

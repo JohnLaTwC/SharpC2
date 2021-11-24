@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
-using SharpC2.API;
+using SharpC2.API.V1;
 using SharpC2.API.V1.Requests;
 using SharpC2.API.V1.Responses;
 
@@ -69,22 +69,26 @@ namespace TeamServer.Controllers
         }
 
         [HttpPut("{name}")]
-        public IActionResult SetHandlerParameters(string name, [FromBody] Dictionary<string, string> parameters)
+        public async Task<IActionResult> SetHandlerParameters(string name, [FromBody] Dictionary<string, string> parameters)
         {
             var handler = _handlers.GetHandler(name);
             if (handler is null) return NotFound();
             handler.SetParameters(parameters);
+
+            await _messageHub.Clients.All.HandlerParametersSet(parameters);
             
             var response = _mapper.Map<Handler, HandlerResponse>(handler);
             return Ok(response);
         }
 
         [HttpPatch("{name}")]
-        public IActionResult SetHandlerParameter(string name, [FromQuery] string key, [FromQuery] string value)
+        public async Task<IActionResult> SetHandlerParameter(string name, [FromQuery] string key, [FromQuery] string value)
         {
             var handler = _handlers.GetHandler(name);
             if (handler is null) return NotFound();
             handler.SetParameter(key, value);
+            
+            await _messageHub.Clients.All.HandlerParameterSet(key, value);
             
             var response = _mapper.Map<Handler, HandlerResponse>(handler);
             return Ok(response);

@@ -60,6 +60,7 @@ namespace TeamServer.Handlers
                 if (string.IsNullOrEmpty(parameter.Value))
                     throw new Exception($"Parameter \"{parameter.Name}\" cannot be null");
 
+            TokenSource = new CancellationTokenSource();
             return Task.CompletedTask;
         }
         

@@ -1,8 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.SignalR;
+
+using TeamServer.Hubs;
 using TeamServer.Interfaces;
 using TeamServer.Models;
 
@@ -13,12 +15,14 @@ namespace TeamServer.Services
         private readonly IServerService _server;
         private readonly IDroneService _drones;
         private readonly ICryptoService _crypto;
+        private readonly IHubContext<MessageHub, IMessageHub> _hub;
 
-        public TaskService(IServerService server, IDroneService drones, ICryptoService crypto)
+        public TaskService(IServerService server, IDroneService drones, ICryptoService crypto, IHubContext<MessageHub, IMessageHub> hub)
         {
             _server = server;
             _drones = drones;
             _crypto = crypto;
+            _hub = hub;
         }
 
         public async Task RecvC2Data(IEnumerable<MessageEnvelope> messages)
@@ -45,6 +49,7 @@ namespace TeamServer.Services
             }
 
             drone.CheckIn();
+            await _hub.Clients.All.DroneCheckedIn(drone.Metadata);
 
             // create a new list of envelopes to send
             var envelopes = new List<MessageEnvelope>();

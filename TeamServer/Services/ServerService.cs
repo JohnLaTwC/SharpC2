@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
+using AutoMapper;
 using Microsoft.AspNetCore.SignalR;
-
+using SharpC2.API.V1.Responses;
 using TeamServer.Hubs;
 using TeamServer.Interfaces;
 using TeamServer.Models;
@@ -18,18 +18,20 @@ namespace TeamServer.Services
     public class ServerService : IServerService
     {
         private C2Profile _profile; 
-            
+
         private readonly IDroneService _drones;
         private readonly ICryptoService _crypto;
         private readonly ICredentialService _credentials;
+        private readonly IMapper _mapper;
         private readonly IHubContext<MessageHub, IMessageHub> _hub;
         
         private readonly List<Module> _modules = new();
 
-        public ServerService(IDroneService drones, ICredentialService credentials, IHubContext<MessageHub, IMessageHub> hub, ICryptoService crypto)
+        public ServerService(IDroneService drones, ICredentialService credentials, IHubContext<MessageHub, IMessageHub> hub, ICryptoService crypto, IMapper mapper)
         {
             _drones = drones;
             _crypto = crypto;
+            _mapper = mapper;
             _credentials = credentials;
             _hub = hub;
 
@@ -129,8 +131,9 @@ namespace TeamServer.Services
         {
             var drone = _drones.GetDrone(metadata.Guid);
             drone.AddModule(module);
-            
-            await _hub.Clients.All.DroneModuleLoaded(metadata, module);
+
+            var response = _mapper.Map<DroneModule, DroneModuleResponse>(module);
+            await _hub.Clients.All.DroneModuleLoaded(metadata, response);
         }
 
         private void LoadDefaultModules()

@@ -83,6 +83,8 @@ namespace TeamServer.Models
             {
                 foreach (var handlerParameter in Handler.Parameters)
                 {
+                    if (string.IsNullOrWhiteSpace(handlerParameter.Value)) continue;
+                    
                     // get matching method in handler
                     var method = targetHandler.Methods.GetMethod(handlerParameter.Name);
                     var instruction = method?.Body.Instructions.FirstOrDefault(i => i.OpCode == OpCodes.Ldstr);
@@ -102,12 +104,10 @@ namespace TeamServer.Models
             var type = module.Types.GetType("Utilities");
             
             var sleepInterval = type.Methods.GetMethod("GetSleepInterval");
-            sleepInterval.Body.Instructions[0].OpCode = OpCodes.Ldc_I4_S;
-            sleepInterval.Body.Instructions[0].Operand = (sbyte)C2Profile.Stage.SleepTime;
+            sleepInterval.Body.Instructions[0].Operand = C2Profile.Stage.SleepTime;
             
             var sleepJitter = type.Methods.GetMethod("GetSleepJitter");
-            sleepInterval.Body.Instructions[0].OpCode = OpCodes.Ldc_I4_S;
-            sleepJitter.Body.Instructions[0].Operand = (sbyte)C2Profile.Stage.SleepJitter;
+            sleepJitter.Body.Instructions[0].Operand = C2Profile.Stage.SleepJitter;
         }
 
         private void SetBypasses(ModuleDef module)

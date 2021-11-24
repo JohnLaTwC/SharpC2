@@ -1,21 +1,50 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text;
 
-using SharpC2.Screens;
-
-namespace SharpC2.ScreenCommands
+namespace SharpC2.Models
 {
-    public abstract class ScreenCommand : SharpSploitResult
+    public abstract class ScreenCommand : Result
     {
         public abstract string Name { get; }
         public abstract string Description { get; }
-        public abstract string Usage { get; }
-        public abstract Screen.CommandCallback Callback { get; }
+        public abstract List<Argument> Arguments { get; }
 
-        protected internal override IList<SharpSploitResultProperty> ResultProperties =>
-            new List<SharpSploitResultProperty>
+        // [optional]
+        // <required>
+        public string Usage
+        {
+            get
             {
-                new() { Name = "Name", Value = Name },
-                new() { Name = "Description", Value = Description }
-            };
+                var sb = new StringBuilder($"Usage: {Name} ");
+
+                if (Arguments is not null)
+                {
+                    foreach (var argument in Arguments)
+                    {
+                        sb.Append(argument.Optional ? "[" : "<");
+                        sb.Append(argument.Name);
+                        sb.Append(argument.Optional ? "]" : ">");
+                        sb.Append(' ');
+                    }
+                }
+
+                return sb.ToString().TrimEnd(' ');
+            }
+        }
+
+        public abstract Screen.Callback Execute { get; }
+        
+        public class Argument
+        {
+            public string Name { get; init; }
+            public bool Artefact { get; init; }
+            public bool Optional { get; init; }
+        }
+
+        protected internal override IList<ResultProperty> ResultProperties => new List<ResultProperty>
+        {
+            new() { Name = "Name", Value = Name },
+            new() { Name = "Description", Value = Description }
+        };
     }
 }

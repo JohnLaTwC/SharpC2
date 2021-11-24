@@ -56,6 +56,7 @@ namespace TeamServer
             services.AddSingleton<ITaskService, TaskService>();
             services.AddSingleton<ICryptoService, CryptoService>();
             services.AddSingleton<IDroneService, DroneService>();
+            services.AddSingleton<IPayloadService, PayloadService>();
             services.AddSingleton<IServerService, ServerService>();
             services.AddSingleton<ICredentialService, CredentialService>();
 
